@@ -7,10 +7,10 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 // To self-host on a plain Node server (e.g. Hostinger VPS / Node app with Node 22),
-// build with the node-server preset. Set BUILD_TARGET=node before running `npm run build`
-// to produce a Node bundle in `.output/` (start it with `npm start`).
-// Leave it unset to keep the default Cloudflare target used by Lovable's hosting.
-const useNodePreset = process.env.BUILD_TARGET === "node";
+// force Nitro's node-server preset whenever the build runs outside Lovable.
+// Inside Lovable, leave Nitro unconfigured so Publish keeps the platform default.
+const isLovableContext = Boolean(process.env.LOVABLE_SANDBOX || process.env.DEV_SERVER__PROJECT_PATH);
+const shouldUseNodePreset = process.env.BUILD_TARGET === "node" || !isLovableContext;
 
 export default defineConfig({
   tanstackStart: {
@@ -18,7 +18,7 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  ...(useNodePreset
+  ...(shouldUseNodePreset
     ? {
         nitro: {
           preset: "node-server",
